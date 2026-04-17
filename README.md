@@ -1,73 +1,157 @@
-# POX
+# Dynamic Host Blocking System using POX (SDN)
 
-POX is a networking software platform written in Python.
+## 📌 Overview
 
-POX started life as an OpenFlow controller, but can now also function as an
-OpenFlow switch, and can be useful for writing networking software in
-general.  It currently supports OpenFlow 1.0 and includes special support
-for the Open vSwitch/Nicira extensions.
+This project implements a **Dynamic Host Blocking System** using Software Defined Networking (SDN) with the POX controller.
+It detects abnormal traffic and dynamically blocks malicious hosts by installing flow rules in the switch.
 
-POX versions are named.  Starting with POX "gar", POX officially requires
-Python 3.  The last version with support for Python 2 was POX "fangtooth".
-POX should run under Linux, Mac OS, and Windows.  (And just about anywhere
-else -- we've run it on Android phones, under FreeBSD, Haiku, and elsewhere.
-All you need is Python!)  Some features are not available on all platforms.
-Linux is the most featureful.
+---
 
-This README contains some information to get you started, but is purposely
-brief.  For more information, please see the full documentation.
+## 🎯 Objectives
 
+* Monitor host traffic
+* Detect high traffic behavior
+* Block malicious hosts dynamically
+* Verify blocking using flow rules
 
-## Running POX
+---
 
-`pox.py` boots up POX. It takes a list of component names on the command line,
-locates the components, calls their `launch()` function (if it exists), and
-then transitions to the "up" state.
+## 🛠 Requirements
 
-If you run `./pox.py`, it will attempt to find an appropriate Python 3
-interpreter itself.  In particular, if there is a copy of PyPy in the main
-POX directory, it will use that (for a potentially large performance boost!).
-Otherwise it will look for things called `python3` and fall back to `python`.
-You can also, of course, invoke the desired Python interpreter manually
-(e.g., `python3 pox.py`).
+* Ubuntu/Linux
+* Mininet
+* Open vSwitch
+* POX Controller
 
-The POX commandline optionally starts with POX's own options (see below).
-This is followed by the name of a POX component, which may be followed by
-options for that component.  This may be followed by further components
-and their options.
+---
 
-  ./pox.py [pox-options...] [component] [component-options...] ...
+## 🚀 Execution
 
-### POX Options
+### Start Controller
 
-While components' options are up to the component (see the component's
-documentation), as mentioned above, POX has some options of its own.
-Some useful ones are:
+```bash
+cd ~/pox
+./pox.py log.level --DEBUG misc.dynamic_block
+```
 
- | Option        | Meaning                                                   |
- | ------------- | --------------------------------------------------------- |
- |`--verbose`    | print stack traces for initialization exceptions          |
- |`--no-openflow`| don't start the openflow module automatically             |
+### Start Mininet
 
+```bash
+sudo mn --topo single,3 --controller remote --switch ovsk
+```
 
-## Components
+---
 
-POX components are basically Python modules with a few POX-specific
-conventions.  They are looked for everywhere that Python normally looks, plus
-the `pox` and `ext` directories.  Thus, you can do the following:
+## 🧪 Experiment Output
 
-  ./pox.py forwarding.l2_learning
+### 🔹 Step 1: Controller + Mininet Start
 
-As mentioned above, you can pass options to the components by specifying
-options after the component name.  These are passed to the corresponding
-module's `launch()` funcion.  For example, if you want to run POX as an
-OpenFlow controller and control address or port it uses, you can pass those
-as options to the openflow._01 component:
+![Step 1](images/1.png)
+*Figure 1: POX controller started and Mininet topology initialized*
 
-  ./pox.py openflow.of_01 --address=10.1.1.1 --port=6634
+---
 
+### 🔹 Step 2: Normal Traffic
 
-## Further Documentation
+![Step 2](images/2.png)
+*Figure 2: Successful ping between hosts (no packet loss)*
 
-The full POX documentation is available on GitHub at
-https://noxrepo.github.io/pox-doc/html/
+---
+
+### 🔹 Step 3: Traffic Monitoring
+
+![Step 3](images/3.png)
+*Figure 3: Controller logs showing packet count per host*
+
+---
+
+### 🔹 Step 4: Heavy Traffic (Attack Simulation)
+
+![Step 4](images/4.png)
+*Figure 4: High traffic generated using ping flood*
+
+---
+
+### 🔹 Step 5: Attack Detection
+
+![Step 5](images/5.png)
+*Figure 5: Controller detects abnormal traffic*
+
+---
+
+### 🔹 Step 6: Blocking Action
+
+![Step 6](images/6.png)
+*Figure 6: Host is blocked after exceeding threshold*
+
+---
+
+### 🔹 Step 7: High Packet Loss
+
+![Step 7](images/7.png)
+*Figure 7: Packet loss observed after blocking*
+
+---
+
+### 🔹 Step 8: Flow Table Verification
+
+![Step 8](images/8.png)
+*Figure 8: DROP rule installed in switch flow table*
+
+---
+
+### 🔹 Step 9: Controller Shutdown
+
+![Step 9](images/9.png)
+*Figure 9: POX controller terminated*
+
+---
+
+## ⚙️ Working Principle
+
+1. Switch sends packets to controller
+2. Controller monitors traffic per host
+3. If threshold exceeded:
+
+   * Host is marked malicious
+   * DROP rule is installed
+4. Traffic from that host is blocked
+
+---
+
+## 🔧 Configuration
+
+* `THRESHOLD` → Maximum allowed packets
+* `TIME_WINDOW` → Time interval
+
+---
+
+## 🧹 Useful Commands
+
+```bash
+sudo mn -c              # Clear Mininet
+sudo pkill -f pox       # Kill controller
+sudo fuser -k 6633/tcp  # Free port
+dpctl dump-flows        # View flow table
+```
+
+---
+
+## ⚠️ Notes
+
+* Start POX before Mininet
+* Ensure port 6633 is free
+* ARP packets must be forwarded
+
+---
+
+## 🎯 Conclusion
+
+This project demonstrates how SDN enables **centralized control and dynamic security enforcement** by detecting and blocking malicious hosts in real-time.
+
+---
+
+## 👨‍💻 Author
+
+Sai
+
